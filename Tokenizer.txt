@@ -1,0 +1,89 @@
+package tokenizer1;
+import java.util.*;
+import java.io.*;
+
+public class program {
+	
+	static int list[] = {};
+	static String keywords[] = {"int","long","double","float","if","else","while","for","break",
+			"continue","goto","void","default","static","public","private","protected","class",
+			"struct","char","enum","case","const","register","signed","unsigned","do","sizeof"};
+	static String ops[] = {"+","-","*","/","^","&","|","<",">","!"};
+	
+	public static int ind(int a) {
+		if((a>=97 && a<=122)||(a>=65 && a<=90))
+			return 0;
+		if(a>=48 && a<=57)
+			return 1;
+		if(a==95)
+			return 2;
+		if(a==46)
+			return 3;
+//		for (int i=0;i<list.length;i++) {
+//			if(list[i]==a) {
+//				return i;
+//			}
+//		}
+		return -1;
+	}
+	
+	public static int key(String a) {
+		for(int i=0;i<keywords.length;i++) {
+			if(a.toLowerCase().equals(keywords[i])) {
+				return 0;
+			}
+		}
+		
+		for(int i=0;i<ops.length;i++) {
+			if(a.toLowerCase().equals(ops[i])) {
+				return 1;
+			}
+		}
+		return -1;
+	}
+	
+	public static void main(String a[]) throws Exception {
+		Scanner s = new Scanner(System.in);
+		File in = new File("Y:\\Compiler Design\\input.txt");
+		BufferedReader br = new BufferedReader(new FileReader(in));
+		int sm[][] = {{3,1,4,2},{5,1,5,2},{5,6,5,5},{3,3,3,5},{5,5,5,5},{5,5,5,5},{5,6,5,5}};
+		String str;
+		while((str = br.readLine())!=null) {
+			if(key(str)==0) {
+				System.out.println("Keyword");
+				continue;
+			}
+			else if(key(str)==1) {
+				System.out.println("Operator");
+				continue;
+			}
+			else {
+				int cur = 0;
+				int index=-1;
+				for (int i=0;i<str.length();i++) {
+					int p = (int)str.charAt(i);
+					index = ind(p);
+					if(index==-1) {
+						break;
+					}
+					cur = sm[cur][index];
+				}
+				
+				if(index==-1) {
+					System.out.println("Unknown");
+					continue;
+				}
+				
+				if (cur==1 || cur==6) {
+					System.out.println("Number");
+				}
+				else if (cur==3 || cur==4) {
+					System.out.println("Identifier");
+				}
+				else {
+					System.out.println("Unknown");
+				}
+			}
+		}
+	}
+}

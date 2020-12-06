@@ -1,0 +1,20 @@
+grammar expression;
+
+g returns [Integer val]: ge = e {System.out.println("the answer is " + $ge.val);};
+
+e returns [Integer val]: ee = e '+' et = t   {$val = $ee.val + $et.val;}
+	| et2 = t {$val = $et2.val;};
+
+t returns [Integer val]: tf = f { $val = $tf.val; }
+	| tt = t '*' tf2 = f   { $val = $tt.val * $tf2.val; };
+
+f returns [Integer val]: '0' { $val = 0;} 
+	| '1' { $val = 1;} 
+	| '2' { $val = 2;}
+	| '3' { $val = 3;}
+	| '4' { $val = 4;}
+	| '5' { $val = 5;}
+	| '6' { $val = 6;}
+	| '7' { $val = 7;}
+	| '8' { $val = 8;}
+	| '9' { $val = 9;}; 

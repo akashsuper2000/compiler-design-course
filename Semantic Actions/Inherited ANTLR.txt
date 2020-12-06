@@ -1,0 +1,20 @@
+grammar simple;
+start  : term EOF   {  System.out.println($term.val);   };
+
+term returns [int val]       : fact   termp[$fact.val] { $val = $termp.val; }
+;
+termp [int i] returns [int val] : '*' fact e=termp [$i * $fact.val] { $val = $e.val; }
+|   { $val = $i; }
+;
+fact returns [int val] : NUM   { $val = Integer.parseInt($NUM.text); }
+;
+
+NUM : '0'.. '9'+ ;
+WS : [ \r\n\t] +  -> skip ;
+                                  
+
+
+grammar
+T -> FT'
+T' -> *FT' | epsilon
+F -> NUM

@@ -1,0 +1,186 @@
+import java.io.IOException;
+import java.io.PushbackInputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+public class Scanner {
+    public static void main(String args[]) throws IOException {
+        Scanner scanner = new Scanner();
+        scanner.drive(new PushbackInputStream(System.in, 8192));
+    }
+        
+    public void drive(PushbackInputStream in) throws IOException {
+        ScannerState state = new ScannerState();
+        state.in = in;
+
+        // IO Exception upon EOF will throw us out 
+        while(true) {                        
+            Token token = null;
+
+            while(token == null) {
+                int curChar = in.read();
+            
+                TableAction[] tbl = scanTable.get( (char) curChar);
+                
+                if(tbl == null) {
+                    System.err.println("Input " + (char) curChar + 
+                                       " not in alphabet.");
+                } else {
+                    token = tbl[state.currentState].action(state, curChar);
+                }
+            }
+     
+            System.out.println("Token: " + token + 
+                               " (image: \"" + state.image + "\")");
+            
+            state.reset();
+        }
+    }
+
+    
+    // state structure to pass scanner state between TableActions and
+    // the main driver.
+    class ScannerState {        
+        PushbackInputStream in       = null;
+        List<Character>     pushback = new LinkedList<Character>();
+        StringBuffer        image    = new StringBuffer();
+        int                 currentState, rememberedState = 0;
+        
+        public void reset() {
+            currentState = rememberedState = 0;
+            
+            pushback.clear();
+            image = new StringBuffer();
+        }
+    }
+
+    
+    /*
+     * Table actions: Move / Recognize / Skip
+     */
+    static abstract class TableAction {
+        public abstract Token action(ScannerState state, int curChar)
+            throws IOException;
+    }
+
+    static class MoveAction extends TableAction {
+        int newStateIndex; // new state which we'll change upon this action
+        
+        public MoveAction(int outState) {
+            this.newStateIndex = outState;
+        }
+        
+        public Token action(ScannerState state, int curChar) {
+            if(tokenTable[newStateIndex] != null) {
+                // this could be a final state
+                state.rememberedState = newStateIndex;
+                state.pushback.clear();
+            } else {
+                state.pushback.add( (char) curChar );
+            }
+            
+            state.image.append( (char) curChar );
+            state.currentState = newStateIndex;
+            return null;
+        }
+    }
+    
+    static class RecognizeAction extends TableAction {
+        public RecognizeAction() { }
+        
+        public Token action(ScannerState state, int curChar) 
+            throws IOException 
+        {
+            state.in.unread(curChar);
+            return tokenTable[state.currentState];
+        }
+    }
+    
+    static class SkipAction extends TableAction {
+        public SkipAction() { }
+        
+        public Token action(ScannerState state, int curChar) {
+            return null;
+        }
+    }
+
+        
+    // Define the possible token types
+    private enum Token {
+        LE, NE, LT, EQ, GE, GT 
+    }
+
+    
+    // when 'recognizing', index in this table tells what
+    // kind of token was recognized
+    private static Token[] tokenTable = new Token[] {
+        null,
+        Token.LT,
+        Token.LE,
+        Token.NE,
+        Token.EQ,
+        Token.GT,
+        Token.GE
+    };
+    
+    
+    
+    /**
+     * There are 6 possible states + start state
+     */
+    private static final int MAX_STATE = 7;
+    
+    private static final Map<Character, TableAction[]> scanTable; 
+    static {
+        scanTable = new HashMap<Character, TableAction[]>();
+        
+        TableAction[] tbl = new TableAction[MAX_STATE];
+        scanTable.put(' ', tbl);
+        scanTable.put('\n', tbl);
+        scanTable.put('\t', tbl);
+        scanTable.put('\r', tbl);
+        tbl[0] = new SkipAction();
+        tbl[1] = new RecognizeAction();
+        tbl[2] = new RecognizeAction();
+        tbl[3] = new RecognizeAction();
+        tbl[4] = new RecognizeAction();
+        tbl[5] = new RecognizeAction();
+        tbl[6] = new RecognizeAction();
+
+        // actions for character  '<'
+        tbl = new TableAction[MAX_STATE];
+	scanTable.put('<', tbl);
+        tbl[0] = new MoveAction(1);
+        tbl[1] = new RecognizeAction();
+        tbl[2] = new RecognizeAction();
+        tbl[3] = new RecognizeAction();
+        tbl[4] = new RecognizeAction();
+        tbl[5] = new RecognizeAction();
+        tbl[6] = new RecognizeAction();
+
+	// actions for character '>'
+        tbl = new TableAction[MAX_STATE];
+	scanTable.put('>', tbl);
+        tbl[0] = new MoveAction(5);
+        tbl[1] = new MoveAction(3);
+        tbl[2] = new RecognizeAction();
+        tbl[3] = new RecognizeAction();
+        tbl[4] = new RecognizeAction();
+        tbl[5] = new RecognizeAction();
+        tbl[6] = new RecognizeAction();
+
+	// actions for character '='
+        tbl = new TableAction[MAX_STATE];
+	scanTable.put('=', tbl);
+        tbl[0] = new MoveAction(4);
+        tbl[1] = new MoveAction(2);
+        tbl[2] = new RecognizeAction();
+        tbl[3] = new RecognizeAction();
+        tbl[4] = new RecognizeAction();
+        tbl[5] = new MoveAction(6);
+        tbl[6] = new RecognizeAction();
+    }    
+}

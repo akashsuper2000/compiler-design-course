@@ -1,0 +1,12 @@
+grammar binary;
+
+en     returns [Integer val] :  e=el  {$val=$e.val;System.out.println("hello the number of 1's is equal to "+$val);}
+         ;
+
+el     returns [Integer val]  :  t=el e1=be {$val=$e1.val+2*$t.val;}  
+          |  e2=be {$val=$e2.val;}  
+          ;
+   
+be    returns   [Integer val]  : '0'  {$val=0;}  
+          |  '1' {$val=1;}  
+          ;  

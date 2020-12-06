@@ -1,0 +1,73 @@
+package missedeval;
+import java.util.*;
+import java.io.*;
+
+public class q1 {
+	
+	public static int ind(int a) {
+		if((a>=97 && a<=122)||(a>=65 && a<=90))
+			return 0;
+		if(a>=48 && a<=57)
+			return 1;
+		if(a==95)
+			return 2;
+		return -1;
+	}
+	
+	public static void main(String a[]) throws Exception {
+		Scanner s = new Scanner(System.in);
+		File in = new File("D:\\Education\\Others\\Eclipse\\missed-eval\\src\\missedeval\\input.txt");
+		BufferedReader br = new BufferedReader(new FileReader(in));
+//		int sm[][] = {{2,3,1},{3,3,3},{2,2,3},{3,3,3}};
+		String str;
+		while((str = br.readLine())!=null) {
+			int cur = 0;
+			int index=-1;
+			for (int i=0;i<str.length();i++) {
+				int p = (int)str.charAt(i);
+				index = ind(p);
+				if(index==-1) {
+					break;
+				}
+				System.out.println(cur);
+				switch(index) {
+				case 0: if(cur==0 || cur==2) {
+					cur = 2;
+				}
+				else {
+					cur = 3;
+				}
+				break;
+				case 1: if(cur==2) {
+					cur = 2;
+				}
+				else {
+					cur = 3;
+				}
+				break;
+				case 2: if(cur==0) {
+					cur = 1;
+				}
+				else {
+					cur = 3;
+				}
+				break;
+				default: cur = 3; break;
+				}
+			}
+			System.out.println(cur);
+			
+			if(index==-1) {
+				System.out.println("Unknown");
+				continue;
+			}
+			
+			if (cur==1 || cur==2) {
+				System.out.println("Identifier");
+			}
+			else {
+				System.out.println("Unknown");
+			}
+		}
+	}
+}
